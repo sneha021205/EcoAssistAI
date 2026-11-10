@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoAssistAI | Environmental Assistance Platform</title>
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js for Environmental Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <!-- Marked.js for Markdown Parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+
+    <!-- Master Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- ==============================================
+             LEFT SIDEBAR: Dark Forest Green (#052317)
+             ============================================== -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h2>EcoAssist<span>AI</span></h2>
+                    </div>
+                </div>
+                <button class="sidebar-toggle-btn mobile-only btn-icon-subtle" id="closeSidebarBtn" title="Close Sidebar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Attractive Scroll Button Below EcoAssistAI Title -->
+            <button class="brand-scroll-btn" id="brandScrollBtn" title="Scroll to AI Assistant & Content">
+                <i class="fa-solid fa-circle-chevron-down"></i>
+                <span>Explore Chat & Insights</span>
+            </button>
+
+            <!-- AI Status Card -->
+            <div class="ai-status-card" id="aiStatusCard">
+                <div class="status-indicator">
+                    <span class="status-pulse" id="statusPulse"></span>
+                    <span class="status-text" id="statusText">Checking status...</span>
+                </div>
+                <div class="status-sub" id="statusSub">AI Assistant</div>
+            </div>
+
+            <!-- New Session Action -->
+            <button class="btn-new-chat" id="newChatBtn">
+                <i class="fa-solid fa-plus"></i>
+                <span>New Eco Session</span>
+            </button>
+
+            <!-- Navigation Links -->
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Navigation</div>
+                <button class="nav-item active" data-view="dashboard" id="navDashboard">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-item" data-view="chat" id="navChat">
+                    <i class="fa-solid fa-comments"></i>
+                    <span>AI Chatbot</span>
+                </button>
+                <button class="nav-item" data-view="data" id="navData">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Environmental Data</span>
+                </button>
+                <button class="nav-item" data-view="settings" id="navSettings">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Settings</span>
+                </button>
+                <button class="nav-item" data-view="about" id="navAbout">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>About</span>
+                </button>
+            </nav>
+
+            <!-- Conversation History List -->
+            <div class="history-section">
+                <div class="nav-section-title">
+                    <span>Recent Chats</span>
+                    <button class="btn-icon-subtle" id="refreshConvsBtn" title="Refresh list">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
+                <div class="history-list" id="conversationsList">
+                    <!-- Populated dynamically via chat.js -->
+                    <div class="history-loading">
+                        <i class="fa-solid fa-circle-notch fa-spin"></i> Loading sessions...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clean Sidebar Footer -->
+            <div class="sidebar-footer">
+                <div class="sidebar-footer-text">
+                    <i class="fa-solid fa-shield-halved" style="color: var(--emerald-400); margin-right: 6px;"></i>
+                    <span>EcoAssistAI Platform</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ==============================================
+             MAIN WORKSPACE AREA
+             ============================================== -->
+        <main class="main-workspace" id="mainWorkspace">
+            <!-- Top App Bar -->
+            <header class="top-bar">
+                <div class="top-bar-left">
+                    <button class="btn-icon mobile-only" id="openSidebarBtn" title="Open Navigation">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="workspace-title-box">
+                        <div class="workspace-title-row">
+                            <h1 id="pageTitle">Eco Dashboard</h1>
+                            <!-- Attractive Scroll to Assistant Button -->
+                            <button class="btn-scroll-hero" id="heroScrollBtn" title="Scroll down to AI Assistant">
+                                <i class="fa-solid fa-circle-chevron-down"></i>
+                                <span>Explore Assistant</span>
+                            </button>
+                        </div>
+                        <p class="subtitle" id="pageSubtitle">Real-time Environmental Analytics & Insights</p>
+                    </div>
+                </div>
+
+                <div class="top-bar-right">
+                    <!-- Quick Theme Toggle -->
+                    <button class="btn-icon" id="quickThemeToggleBtn" title="Toggle Light / Dark Mode">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+                    <!-- Quick Log Action Button -->
+                    <button class="btn-primary" id="openLogModalBtn">
+                        <i class="fa-solid fa-plus-circle"></i>
+                        <span>Log Eco Action</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ==============================================
+                 VIEW 1: ECO DASHBOARD
+                 ============================================== -->
+            <section class="view-container active" id="viewDashboard">
+                <!-- KPI Stat Cards Row (Calculated strictly from real database records) -->
+                <div class="stats-grid">
+                    <!-- Card 1: Total Records -->
+                    <div class="glass-card stat-card float-card-1">
+                        <div class="stat-icon-wrapper lime">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-label">Total Observations</span>
+                            <div class="stat-value-row">
+                                <span class="stat-number" id="statActionCount">0</span>
+                                <span class="stat-unit">records</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Total CO2e Avoided -->
+                    <div class="glass-card stat-card float-card-2">
+                        <div class="stat-icon-wrapper emerald">
+                            <i class="fa-solid fa-smog"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-label">Total CO₂e Avoided</span>
+                            <div class="stat-value-row">
+                                <span class="stat-number" id="statTotalCo2">0.0</span>
+                                <span class="stat-unit">kg CO₂e</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Tree Absorption Equivalent -->
+                    <div class="glass-card stat-card float-card-3">
+                        <div class="stat-icon-wrapper forest">
+                            <i class="fa-solid fa-tree"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-label">Tree Absorption Equivalent</span>
+                            <div class="stat-value-row">
+                                <span class="stat-number" id="statTrees">0.0</span>
+                                <span class="stat-unit">Trees / yr</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Monthly Target Progress -->
+                    <div class="glass-card stat-card float-card-4">
+                        <div class="stat-icon-wrapper cyan">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                        <div class="stat-content">
+                            <span class="stat-label">Target Progress (<span id="statTargetNumber">60</span> kg)</span>
+                            <div class="stat-value-row">
+                                <span class="stat-number" id="statProgressPct">0%</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="statProgressBar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State Banner (Shown when 0 records exist) -->
+                <div class="glass-card empty-state" id="dashboardEmptyState" style="display: none;">
+                    <div class="empty-state-icon">
+                        <i class="fa-solid fa-seedling"></i>
+                    </div>
+                    <h4>No Environmental Records Found</h4>
+                    <p>Start tracking your carbon reduction by logging your first environmental action.</p>
+                    <button class="btn-primary" id="emptyStateLogBtn">
+                        <i class="fa-solid fa-plus-circle"></i> Log Your First Action
+                    </button>
+                </div>
+
+                <!-- Interactive Charts Row (Generated from actual dataset values) -->
+                <div class="charts-grid" id="dashboardChartsGrid">
+                    <!-- Chart 1: Category Comparison -->
+                    <div class="glass-card chart-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <h3><i class="fa-solid fa-chart-pie"></i> Category Distribution</h3>
+                                <p>Emissions avoided by environmental category</p>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="categoryDoughnutChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Trends Over Time -->
+                    <div class="glass-card chart-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <h3><i class="fa-solid fa-chart-line"></i> 7-Day Reduction Trend</h3>
+                                <p>Daily verified emissions saved (kg CO₂e)</p>
+                            </div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="weeklyTrendLineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Split Row: Assistant Spotlight & Recent Activity Table -->
+                <div class="dashboard-split-row" id="assistantSpotlightSection">
+                    <!-- Assistant Spotlight Card -->
+                    <div class="glass-card ai-spotlight-card">
+                        <div class="ai-orb-centerpiece">
+                            <div class="ai-orb-container">
+                                <div class="ai-orb" id="dashboardAiOrb" title="EcoAssistAI Assistant Indicator">
+                                    <div class="orb-core"></div>
+                                    <div class="orb-ring ring-1"></div>
+                                    <div class="orb-ring ring-2"></div>
+                                    <div class="orb-particle p1"></div>
+                                    <div class="orb-particle p2"></div>
+                                    <div class="orb-particle p3"></div>
+                                </div>
+                            </div>
+                            <div class="orb-badge">AI Active</div>
+                        </div>
+                        <div class="spotlight-content">
+                            <h3>Have an environmental question?</h3>
+                            <p>Ask EcoAssistAI for carbon audits, energy saving tips, or summaries of your recorded data.</p>
+                            <div class="quick-chip-row" id="dashboardChips">
+                                <!-- Dynamic prompt chips -->
+                            </div>
+                            <button class="btn-primary-emerald" id="jumpToChatBtn">
+                                <i class="fa-solid fa-message"></i>
+                                <span>Open AI Chatbot</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Observations Summary Table -->
+                    <div class="glass-card recent-activities-card">
+                        <div class="card-header">
+                            <div class="card-title-group">
+                                <h3><i class="fa-solid fa-list-check"></i> Recent Observations</h3>
+                                <p>Backed by actual SQLite database records</p>
+                            </div>
+                            <button class="btn-text-emerald" id="viewAllActivityBtn">View All</button>
+                        </div>
+                        <div class="activity-table-wrapper">
+                            <table class="activity-table" id="recentActivityTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Category</th>
+                                        <th>Activity Name</th>
+                                        <th>CO₂e Saved</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentActivityTableBody">
+                                    <!-- Populated dynamically via charts.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==============================================
+                 VIEW 2: AI CHATBOT INTERFACE
+                 ============================================== -->
+            <section class="view-container" id="viewChat">
+                <div class="chat-workspace-card glass-card">
+                    <!-- Chat Header with Animated Assistant Indicator -->
+                    <div class="chat-header-banner">
+                        <div class="chat-header-left">
+                            <div class="chat-ai-orb-container">
+                                <div class="ai-orb mini" id="chatAiOrb">
+                                    <div class="orb-core"></div>
+                                    <div class="orb-ring ring-1"></div>
+                                </div>
+                            </div>
+                            <div class="chat-ai-title">
+                                <h3 id="currentChatTitle">EcoAssistAI</h3>
+                                <span class="ai-mode-pill" id="aiModePill">
+                                    <span class="dot"></span> AI Assistant
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="chat-header-right">
+                            <button class="btn-icon" id="clearChatViewBtn" title="Clear current message view">
+                                <i class="fa-solid fa-broom"></i>
+                            </button>
+                            <button class="btn-icon" id="exportChatBtn" title="Export conversation transcript">
+                                <i class="fa-solid fa-download"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Messages Scroll Area -->
+                    <div class="messages-container" id="messagesContainer">
+                        <!-- Messages injected dynamically via chat.js -->
+                    </div>
+
+                    <!-- Quick Prompt Suggestions -->
+                    <div class="chat-quick-suggestions" id="chatSuggestionsRow">
+                        <!-- Populated dynamically -->
+                    </div>
+
+                    <!-- Input Bar -->
+                    <div class="chat-input-bar">
+                        <form id="chatForm">
+                            <textarea 
+                                id="chatInput" 
+                                placeholder="Ask an environmental question, or ask about your recorded activities..."
+                                rows="1"
+                                required
+                            ></textarea>
+                            <div class="chat-form-actions">
+                                <button type="button" class="btn-voice" id="voiceSpeakBtn" title="Read last reply aloud">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                                <button type="submit" class="btn-send" id="sendBtn" title="Send message">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                        <div class="chat-disclaimer">
+                            <span>EcoAssistAI • Environmental Assistant</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==============================================
+                 VIEW 3: ENVIRONMENTAL DATA LEDGER
+                 ============================================== -->
+            <section class="view-container" id="viewData">
+                <div class="glass-card full-data-card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <h2>Environmental Records Ledger</h2>
+                            <p>Actual observations and carbon avoidance records stored in SQLite</p>
+                        </div>
+                        <button class="btn-primary" id="openLogModalFromDataBtn">
+                            <i class="fa-solid fa-plus-circle"></i> Log New Action
+                        </button>
+                    </div>
+
+                    <!-- Filter & Search Toolbar -->
+                    <div class="filter-bar">
+                        <div class="filter-chips">
+                            <button class="filter-chip active" data-filter="all">All</button>
+                            <button class="filter-chip" data-filter="Transport">Transport</button>
+                            <button class="filter-chip" data-filter="Energy">Energy</button>
+                            <button class="filter-chip" data-filter="Food & Diet">Food & Diet</button>
+                            <button class="filter-chip" data-filter="Waste & Recycling">Waste & Recycling</button>
+                        </div>
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+                            <input type="text" id="dataSearchInput" placeholder="Search records...">
+                        </div>
+                    </div>
+
+                    <!-- Full Records Table -->
+                    <div class="full-table-wrapper">
+                        <table class="activity-table full" id="fullDataTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Activity / Observation</th>
+                                    <th>CO₂e Avoided</th>
+                                    <th>Notes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fullDataTableBody">
+                                <!-- Populated dynamically via charts.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==============================================
+                 VIEW 4: SETTINGS SECTION (Simplified)
+                 ============================================== -->
+            <section class="view-container" id="viewSettings">
+                <div class="settings-container">
+                    <!-- Appearance Theme -->
+                    <div class="glass-card settings-card">
+                        <div class="settings-card-header">
+                            <h3><i class="fa-solid fa-palette"></i> Appearance Theme</h3>
+                            <p>Toggle between light and dark theme. Preference is saved automatically.</p>
+                        </div>
+                        <div class="settings-options-grid">
+                            <div class="settings-option-card active" id="themeLightOption" data-theme="light">
+                                <div class="option-radio">
+                                    <i class="fa-solid fa-sun" style="color: #f59e0b; font-size: 1.2rem;"></i>
+                                </div>
+                                <div class="option-info">
+                                    <h4>Light Theme</h4>
+                                    <p>Clean, crisp workspace with emerald accents.</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-option-card" id="themeDarkOption" data-theme="dark">
+                                <div class="option-radio">
+                                    <i class="fa-solid fa-moon" style="color: #10b981; font-size: 1.2rem;"></i>
+                                </div>
+                                <div class="option-info">
+                                    <h4>Dark Theme</h4>
+                                    <p>Deep forest green background with softened contrast.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Response Preferences -->
+                    <div class="glass-card settings-card">
+                        <div class="settings-card-header">
+                            <h3><i class="fa-solid fa-sliders"></i> Response Preferences</h3>
+                            <p>Choose your preferred response length for the AI assistant.</p>
+                        </div>
+                        <div class="settings-options-grid">
+                            <div class="settings-option-card active" id="responseDetailedOption" data-style="detailed">
+                                <div class="option-radio">
+                                    <i class="fa-solid fa-align-left" style="color: var(--emerald-500); font-size: 1.1rem;"></i>
+                                </div>
+                                <div class="option-info">
+                                    <h4>Detailed Responses</h4>
+                                    <p>Comprehensive explanations with step-by-step guidance and metrics.</p>
+                                </div>
+                            </div>
+
+                            <div class="settings-option-card" id="responseConciseOption" data-style="concise">
+                                <div class="option-radio">
+                                    <i class="fa-solid fa-compress" style="color: #0284c7; font-size: 1.1rem;"></i>
+                                </div>
+                                <div class="option-info">
+                                    <h4>Concise Responses</h4>
+                                    <p>Brief, punchy bullet points focused purely on action items.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Storage Management -->
+                    <div class="glass-card settings-card">
+                        <div class="settings-card-header">
+                            <h3><i class="fa-solid fa-trash-can"></i> Chat History</h3>
+                            <p>Manage your conversational sessions safely.</p>
+                        </div>
+                        <div class="settings-action-row">
+                            <div class="action-info">
+                                <h4>Clear All Chat Conversations</h4>
+                                <p>Deletes chat messages from SQLite. All environmental records and dashboard statistics are preserved.</p>
+                            </div>
+                            <button class="btn-danger" id="clearAllChatsBtn">
+                                <i class="fa-solid fa-trash-can"></i> Clear Chat History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ==============================================
+                 VIEW 5: ABOUT SECTION (Simplified)
+                 ============================================== -->
+            <section class="view-container" id="viewAbout">
+                <div class="glass-card about-card">
+                    <div class="about-header">
+                        <h2>EcoAssistAI</h2>
+                        <div class="tagline">Your Environmental Learning & Sustainability Companion</div>
+                    </div>
+
+                    <div class="about-section">
+                        <p>EcoAssistAI is designed to help you learn about environmental conservation, explore sustainable lifestyle habits, and discover practical, everyday ways to protect nature and reduce your carbon footprint.</p>
+                        <p>Whether you want to calculate the impact of your daily travel, find simple ways to save energy at home or school, or explore positive recycling practices, EcoAssistAI is here to provide helpful, actionable environmental insights.</p>
+                        <p>Track your environmental observations on the dashboard, view real trends over time, and ask the AI assistant for personalized guidance whenever you need it.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ==============================================
+         MODAL 1: LOG ECO ACTION
+         ============================================== -->
+    <div class="modal-overlay" id="logModal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-leaf"></i> Log Environmental Action</h3>
+                <button class="modal-close-btn" id="closeLogModalBtn">&times;</button>
+            </div>
+            <form id="logActivityForm">
+                <div class="form-group">
+                    <label for="actCategory">Category</label>
+                    <select id="actCategory" required>
+                        <option value="Transport">Transport (Cycle, Walking, Transit)</option>
+                        <option value="Energy">Energy (AC reduction, LEDs, Power off)</option>
+                        <option value="Food & Diet">Food & Diet (Plant-based meals, low waste)</option>
+                        <option value="Waste & Recycling">Waste & Recycling (Compost, Plastic avoidance)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="actName">Activity / Observation</label>
+                    <input type="text" id="actName" placeholder="e.g., Cycled to campus instead of motor scooter" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group half">
+                        <label for="actCo2">Estimated CO₂e Saved (kg)</label>
+                        <input type="number" step="0.05" min="0.05" id="actCo2" placeholder="e.g., 1.45" required>
+                    </div>
+                    <div class="form-group half">
+                        <label for="actDate">Date</label>
+                        <input type="date" id="actDate" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="actNotes">Notes & Details (Optional)</label>
+                    <textarea id="actNotes" rows="2" placeholder="e.g., 6 km commute; avoided petrol combustion"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" id="cancelLogModalBtn">Cancel</button>
+                    <button type="submit" class="btn-primary" id="saveActivityBtn">
+                        <i class="fa-solid fa-check"></i> Save to Database
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==============================================
+         MODAL 2: CONFIRMATION DIALOG MODAL
+         ============================================== -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h3 id="confirmModalTitle"><i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b;"></i> Confirm Action</h3>
+                <button class="modal-close-btn" id="closeConfirmModalBtn">&times;</button>
+            </div>
+            <p id="confirmModalMessage" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5;">
+                Are you sure you want to proceed with this action?
+            </p>
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" id="cancelConfirmBtn">Cancel</button>
+                <button type="button" class="btn-danger" id="actionConfirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Custom Scripts -->
+    <script src="/static/js/ui.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/chat.js"></script>
+</body>
+</html>
